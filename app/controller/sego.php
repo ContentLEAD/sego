@@ -60,7 +60,7 @@ class sego extends controller{
     }
 
     // Sets facebook page ID for client account
-    public function facebook_set_page($sfid = 0) {
+    public function facebook_set_page() {
 
         // List all facebook pages and render the form
 
@@ -75,6 +75,33 @@ class sego extends controller{
         $response = $fb->get('/me?fields=id,name,accounts', $token);
         $user = $response->getGraphUser();
         $accounts = $user['accounts'];
+
+        $sfid = $_POST['sfid'];
+
+
+        // Build form
+        /*
+        $html = '
+      <form action="/index.php/sego/facebook_set_page" method="POST">
+        <select name="pageID">
+          <option value="null">Select a facebook page</option>'
+          foreach($accounts as $account) {
+            $html .= '<option value="' . $account['id'] . '">' . $account['name'] . '</option>';
+          }
+        $html .= '
+        </select>
+        <br>
+        <input name="sfid" type="hidden" value=" ' . echo $sfid; . '"></input>
+        <input name="page_name" type="hidden" value="' . echo $account['name']; . '"></input>
+        <input type="submit" value="Submit">
+      </form>';
+      */
+
+      $html = 'oh hell yeah';
+
+        echo $html;
+        var_dump($html);
+
 
         // Handle callback and process form
         if ($_POST['pageID']) {
@@ -92,15 +119,18 @@ class sego extends controller{
             //REPLACING
 
             //NEW
-            $this->fez->mongo->set(array('tokens.facebook_page_id'=>$_POST['pageID']))
+            $this->fez->mongo->set(array(
+                'tokens.facebook.page_id'=>$_POST['pageID'],
+                'tokens.facebook.page_name'=>$_POST['page_name']
+                ))
                 ->in('records')
                 ->where(array('sfid'=>$_POST['sfid']))
                 ->go();
         }
 
-        $this->fez->load->view('header');
+
         $this->fez->load->view('sego/facebook',array('accounts'=>$accounts, 'sfid'=>$sfid));
-        $this->fez->load->view('footer');
+
 
     }
 

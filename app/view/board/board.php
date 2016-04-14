@@ -80,7 +80,7 @@
                 echo $fbInfo['signin'];
             }
 
-             ?>
+            ?>
         </div>
     </div>
     <div class="col-md-8 col-xs-8">
@@ -209,6 +209,9 @@
 
                     <div style="clear:both;">
                         <a href="http://sego.dev/index.php/sego/facebook_set_page/<?php echo $client_id; ?>">Set Facebook page</a>
+                        <button onclick="setFacebookPage('<?php echo $client_id; ?>')">Set Facebook page</button>
+
+                        <div id="facebookAccounts-<?php echo $client_id; ?>"></div>
                     </div>
 
 

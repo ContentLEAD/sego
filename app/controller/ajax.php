@@ -721,7 +721,18 @@ class ajax extends controller{
     private function build_action_html($auth,$network,$client,$item_id,$data=0){
         if($auth){
 
-            $html='<div class="col-md-4">
+            // Get posting location name (e.g. facebook page name)
+            $query = $this->fez->mongo->findOne()
+                        ->in('records')
+                        ->where(array('sfid'=>$client))
+                        ->go();
+            $pageName = $query['tokens']['facebook']['page_name'];
+
+            $html=  '<div class="col-md-12">
+                        <h4>Posting to ' .  $pageName . '</h4>
+                    </div>
+
+                    <div class="col-md-4">
                         <div class="row widget">
                             <div id="network-info" class="col-md-12"><h4 style="line-height:1px;">'.$network.'</h4></div>
                             <div id="action-info" class="col-md-12">POST</div>

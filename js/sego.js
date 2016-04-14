@@ -90,3 +90,22 @@ function updateStats(network, item_id) {
         }
     });
 }
+
+
+function setFacebookPage(sfid) {
+
+    $.ajax({
+        url: '/index.php/sego/facebook_set_page',
+        method: 'POST',
+        data: {
+            sfid: sfid
+        },
+        success: function(response) {
+            console.log(response);
+            var elementName = '#facebookAccounts-' + sfid;
+            $(elementName).html(response);
+        }
+    });
+
+}
+

@@ -10,6 +10,8 @@ class board extends controller{
             header( 'Location: /' ) ;
         }
 
+        // FACEBOOK
+
         // Handle general facebook auth
 
         // Check for token
@@ -23,6 +25,9 @@ class board extends controller{
         } else {
             $fb = $this->fez->facebook->get_connection();
         }
+
+        // G
+
 
         $fbInfo['signin'] = $fbSignin;
         $fbInfo['fb'] = $fb;
@@ -148,7 +153,7 @@ class board extends controller{
             $this->fez->load->view('board/stopgap',array('term'=>$term));
         }
 
-        $this->fez->load->view('board/board',array('is_admin'=>$admin,'overdue'=>$overdue,'tasks'=>$tasks,'client'=>$data,'chart'=>$perc,'fbInfo'=>$fbInfo));
+        $this->fez->load->view('board/board',array('is_admin'=>$admin,'overdue'=>$overdue,'tasks'=>$tasks,'client'=>$data,'chart'=>@$perc,'fbInfo'=>$fbInfo,'items'=>$items));
         $this->fez->load->view('footer');
     }
 
