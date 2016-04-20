@@ -46,7 +46,7 @@ function sego_post(network,client,item_id){
         var sched = 0;
         if($('#datepicker').val() != ''){
             var deploy = $('#datepicker').val();
-            var timestamp = $('#datepicker').datepicker('getDate') / 1000;
+            var timestamp = $('#datepicker').datetimepicker('getValue') / 1000;
             sched = 1;
         }
 

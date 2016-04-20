@@ -806,7 +806,7 @@ class ajax extends controller{
         $html.="
             <script>
               $(function() {
-                $( '#datepicker' ).datepicker();
+                $( '#datepicker' ).datetimepicker();
               });
               twitter_validate();
             </script>

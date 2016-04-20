@@ -10,6 +10,8 @@
         <link rel="stylesheet" href="/css/sweetalert.css">
         <link rel="stylesheet" href="/css/jquery.fancybox.css" type="text/css" media="screen" />
 
+        <link rel="stylesheet" href="/css/jquery.datetimepicker.css">
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
         <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -24,6 +26,8 @@
         <script>try{Typekit.load({ async: true });}catch(e){}</script>
         <script src="https://use.typekit.net/woo5yta.js"></script>
         <script>try{Typekit.load({ async: true });}catch(e){}</script>
+
+        <script src="/js/jquery.datetimepicker.full.min.js"></script>
 
     </head>
     <body>
