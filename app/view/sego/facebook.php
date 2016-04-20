@@ -48,7 +48,7 @@
               page_name: $('#pageID option:selected').text()
             },
             success: function() {
-              console.log( 'dun it worked dun');
+              alert('Facebook page set');
             }
           });
         })

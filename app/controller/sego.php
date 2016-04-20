@@ -78,31 +78,6 @@ class sego extends controller{
 
         $sfid = $_POST['sfid'];
 
-
-        // Build form
-        /*
-        $html = '
-      <form action="/index.php/sego/facebook_set_page" method="POST">
-        <select name="pageID">
-          <option value="null">Select a facebook page</option>'
-          foreach($accounts as $account) {
-            $html .= '<option value="' . $account['id'] . '">' . $account['name'] . '</option>';
-          }
-        $html .= '
-        </select>
-        <br>
-        <input name="sfid" type="hidden" value=" ' . echo $sfid; . '"></input>
-        <input name="page_name" type="hidden" value="' . echo $account['name']; . '"></input>
-        <input type="submit" value="Submit">
-      </form>';
-      */
-
-      $html = 'oh hell yeah';
-
-        echo $html;
-        var_dump($html);
-
-
         // Handle callback and process form
         if ($_POST['pageID']) {
 
@@ -326,15 +301,28 @@ class sego extends controller{
 
         $timestamp = intval($_POST['timestamp']);
         $sched = intval($_POST['sched']);
+        $post = $_POST['post'];
+
+        // Check for urls in post
+        $regex = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
+        if ( preg_match($regex, $post, $url) ) {
+            $link = $url[0];
+        } else {
+            $link = '';
+        }
 
         if ( $sched ) {
             $postArray = array (
-                'message' => $_POST['post'],
+                'message' => $post,
+                'link' => $link,
                 'published' => FALSE,
                 'scheduled_publish_time' => $timestamp
             );
         } else {
-            $postArray = array ( 'message' => $_POST['post'] );
+            $postArray = array (
+                'message' => $post,
+                'link' => $link,
+            );
         }
 
         // Now publish the post
