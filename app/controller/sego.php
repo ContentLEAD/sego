@@ -186,6 +186,123 @@ class sego extends controller{
         $this->fez->load->view('footer');
     }
 
+    // List all published facebook posts for an item.
+    public function facebook_listen() {
+
+        $item_id = $_GET['item_id'];
+        $client = $_GET['client'];
+
+        // Get client name
+        $record = $this->fez->mongo->findOne()
+                    ->in('records')
+                    ->where(array('sfid'=>$client))
+                    ->go();
+        $client_name = $record['client_name'];
+
+        $pageID = $this->fez->mongo->find(array('tokens'))
+                ->in('records')
+                ->where(array('sfid'=>$client))
+                ->go();
+        // Get first value of associative array
+        $pageID = reset($pageID);
+        $pageID = $pageID['tokens']['facebook_page_id'];
+
+        $token = $this->fez->db->select('tokens')
+                ->from('token')
+                ->where('network="FACEBOOK"')
+                ->row();
+        $token = $token['tokens'];
+
+        $fb = $this->fez->facebook->get_connection();
+        $fbApp = $fb->getApp();
+
+        $request = new Facebook\FacebookRequest(
+          $fbApp,
+          $token,
+          'GET',
+          '/' . $pageID . '?fields=access_token'
+        );
+
+        try {
+            $response = $fb->getClient()->sendRequest($request);
+        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+            // When Graph returns an error
+            echo 'Graph returned an error: ' . $e->getMessage();
+            exit;
+        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+            // When validation fails or other local issues
+            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            exit;
+        }
+
+        $graphNode = $response->getGraphNode();
+        $pageToken = $graphNode['access_token'];
+
+        // Get all posts on page
+        $request = new Facebook\FacebookRequest(
+            $fbApp,
+            $pageToken,
+            'GET',
+            '/' . $pageID . '/feed'
+        );
+
+        try {
+            $response = $fb->getClient()->sendRequest($request);
+        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+            // When Graph returns an error
+            echo 'Graph returned an error: ' . $e->getMessage();
+            exit;
+        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+            // When validation fails or other local issues
+            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            exit;
+        }
+
+        $graphEdge = $response->getGraphEdge();
+        $decodedBody = $response->getDecodedBody();
+        $posts = $decodedBody['data'];
+
+        $fbPosts = [];
+
+        foreach ($posts as $post) {
+
+            $post_id = $post['id'];
+
+            $request = new Facebook\FacebookRequest(
+                $fbApp,
+                $token,
+                'GET',
+                '/' . $post_id . '?fields=comments{created_time,from,message,id,comments},message,created_time,likes,shares'
+            );
+            try {
+                $response = $fb->getClient()->sendRequest($request);
+            } catch(Facebook\Exceptions\FacebookResponseException $e) {
+                // When Graph returns an error
+                echo 'Graph returned an error: ' . $e->getMessage();
+                exit;
+            } catch(Facebook\Exceptions\FacebookSDKException $e) {
+                // When validation fails or other local issues
+                echo 'Facebook SDK returned an error: ' . $e->getMessage();
+                exit;
+            }
+            $graphNode = $response->getGraphNode();
+            $decodedBody = $response->getDecodedBody();
+
+         //   if ( array_key_exists('comments', $decodedBody) ) {
+                array_push($fbPosts, $decodedBody);
+        //    }
+
+
+        }
+
+
+        $this->fez->load->view('header');
+        $this->fez->load->view('sego/facebook_listen', array( 'fbPosts' => $fbPosts, 'client_name' => $client_name ));
+        $this->fez->load->view('footer');
+
+    }
+
+
     // Update facebook post stats, e.g. likes
     public function facebook_update_stats() {
 
@@ -212,7 +329,7 @@ class sego extends controller{
                 $fbApp,
                 $token,
                 'GET',
-                '/' . $post_id . '?fields=likes&summary=true'
+                '/' . $post_id . '?fields=likes,shares,comments'
             );
             try {
                 $response = $fb->getClient()->sendRequest($request);
@@ -229,6 +346,18 @@ class sego extends controller{
             $likes = $graphNode['likes'];
             $numberLikes = count($likes);
 
+            $comments = $graphNode['comments'];
+            $commentsCount = count($comments);
+
+           // $reactions = $graphNode['reactions'];
+           // $reactionsCount = count($reactions);
+
+            $shares = $graphNode['shares'];
+            $sharesCount = $shares['count'];
+            if (empty($sharesCount)) {
+                $sharesCount = 0;
+            }
+
             echo $numberLikes;
             foreach ($likes as $like) {
                 echo '<pre>';
@@ -236,7 +365,12 @@ class sego extends controller{
                 echo '<pre>';
             }
 
-            $this->fez->mongo->set(array('stats.likes'=>$numberLikes))
+            $this->fez->mongo->set(array(
+                'stats.likes '=> $numberLikes,
+                'stats.shares' => $sharesCount,
+                'stats.comments' => $commentsCount,
+            //    'stats.reactions' => $reactionsCount
+                ))
                 ->in('posts')
                 ->where(array('post_id'=>$post_id))
                 ->go();

@@ -86,8 +86,10 @@ function updateStats(network, item_id) {
           item_id: item_id
         },
         success: function() {
-            location.reload();
+         //   location.reload();
         }
+    }).done(function(message) {
+        console.log(message);
     });
 }
 

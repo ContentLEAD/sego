@@ -6,15 +6,23 @@
       </div>
 
       <div class="row queued-post">
-        <div class="col-md-2">Date</div>
-        <div class="col-md-2">Content</div>
-        <div class="col-md-2">Likes</div>
+        <div class="col-md-1">Date</div>
+        <div class="col-md-6">Content</div>
+        <div class="col-md-1">Likes</div>
+        <div class="col-md-1">Shares</div>
+        <div class="col-md-1">Comments</div>
+
       </div>
+
       <?php foreach($query as $k => $v){ ?>
           <div class="row queued-post">
-            <div class="col-md-2"><?php echo date('m-d-y',$v['post_date']); ?></div>
-            <div class="col-md-2"><?php echo $v['content']; ?></div>
-            <div class="col-md-2"><?php echo $v['stats']['likes']; ?></div>
+            <div class="col-md-1"><?php echo date('m-d-y',$v['post_date']); ?></div>
+            <div class="col-md-6"><?php echo $v['content']; ?></div>
+            <div class="col-md-1"><?php echo $v['stats']['likes']; ?></div>
+            <div class="col-md-1"><?php echo $v['stats']['shares']; ?></div>
+            <div class="col-md-1"><?php echo $v['stats']['comments']; ?></div>
+
+
           </div>
       <?php } ?>
 

@@ -775,6 +775,7 @@ class ajax extends controller{
                         </div>
                     </div>
                     <div class="col-md-12">
+                        <h4><a href="http://sego.dev/index.php/sego/facebook_listen?client=' . $client . '&item_id=' . $item_id . '">Facebook Listener</a></h4>
                         <h4><a href="http://sego.dev/index.php/sego/facebook_list_posts?client=' . $client . '&item_id=' . $item_id . '">Published Posts</a></h4>
                         <h4>Queued Posts</h4>
                         ';
