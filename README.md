@@ -14,9 +14,12 @@ To set up local instance:
 
 Key changes from base SEGO:
 
-app/controller/ajax.php
-app/controller/board.php
-app/controller/sego.php
+- app/controller/ajax.php
 
-app/view/board.php
-app/view/sego
+- app/controller/board.php
+
+- app/controller/sego.php
+
+- app/view/board.php
+
+- app/view/sego
