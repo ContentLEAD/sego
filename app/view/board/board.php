@@ -79,7 +79,6 @@
             if ( !empty($fbInfo['signin']) ) {
                 echo $fbInfo['signin'];
             }
-
             ?>
         </div>
     </div>

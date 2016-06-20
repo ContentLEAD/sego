@@ -26,11 +26,7 @@ class board extends controller{
             $fb = $this->fez->facebook->get_connection();
         }
 
-        // G
-
-
         $fbInfo['signin'] = $fbSignin;
-        $fbInfo['fb'] = $fb;
 
         //IS ADMIN
         if($admin){

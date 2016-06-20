@@ -11,3 +11,12 @@ To set up local instance:
 - Go to http://sego.dev/index.php/gate/override to create a new user or login. Use your salesforce email.
 
 - To view any social media data, you'll need to have your salesforce account be assigned to some clients in salesforce.
+
+Key changes from base SEGO:
+
+app/controller/ajax.php
+app/controller/board.php
+app/controller/sego.php
+
+app/view/board.php
+app/view/sego

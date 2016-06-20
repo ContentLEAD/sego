@@ -2,98 +2,39 @@
 
 class sego extends controller{
 
+    protected $fb;
+    protected $token;
 
-    public function index() {
-        echo '<h1>sego index</h1>';
-    }
-
-    /*
-        FACEBOOK LOADER WILL LOAD OR REPLACE NEW TOKENS.
-    */
-
-    public function facebook_loader_OLD($sfid = 0){
-        //IS CALLBACK
-        if(isset($_GET['code'])){
-            //GET FACEBOOK CONNECTION
-            $fb= $this->fez->facebook->get_connection();
-            //GET HELPER
-            $helper = $fb->getRedirectLoginHelper();
-            //GRAB ACCESS TOKEN
-            $accessToken = $helper->getAccessToken();
-
-            //CHECK IF EXISTS
-            $exists = $this->fez->db->select('*')
-                ->from('token')
-                ->where('network = "FACEBOOK" AND sfid="'.$_SESSION['fb_sfid'].'"')
-                ->row();
-            //REPLACING
-            if($exists){
-                //REPLACE
-                $t = new token;
-                $t->load($exists['id']);
-                //SET NEW INFORMATION
-                $t->set('tokens',(string)$accessToken);
-                //SAVE
-                $t->save();
-            }else{
-                //NEW
-                $data = array(
-                    'sfid'=> $_SESSION['fb_sfid'],
-                    'network'=>'FACEBOOK',
-                    'tokens'=>(string) $accessToken,
-                );
-                //INSERT
-                $this->fez->db->insert($data)
-                    ->into('token')
-                    ->go();
-            }
-            return;
-        }
-        //NOT CALLBACK
-        $_SESSION['fb_sfid'] = $sfid;
-        //GET SIGNING
-        $signin = $this->fez->facebook->signin();
-
-        $this->fez->load->view('header');
-        $this->fez->load->view('sego/facebook',array('signin'=>$signin));
-        $this->fez->load->view('footer');
-    }
-
-    // Sets facebook page ID for client account
-    public function facebook_set_page() {
-
-        // List all facebook pages and render the form
-
-        $fb = $this->fez->facebook->get_connection();
+    public function __construct() {
+        parent::__construct();
+        $this->fb = $this->fez->facebook->get_connection();
 
         $tokenRow = $this->fez->db->select('tokens')
                     ->from('token')
                     ->where('network="FACEBOOK"')
                     ->row();
-        $token = $tokenRow['tokens'];
+        $this->token = $tokenRow['tokens'];
 
-        $response = $fb->get('/me?fields=id,name,accounts', $token);
+    }
+
+    public function index() {
+        echo '<h1>sego index</h1>';
+    }
+
+
+    // Sets facebook page ID for client account
+    public function facebook_set_page() {
+        // List all facebook pages and render the form
+        $response = $this->fb->get('/me?fields=id,name,accounts', $this->token);
         $user = $response->getGraphUser();
         $accounts = $user['accounts'];
-
         $sfid = $_POST['sfid'];
+
+        $this->fez->load->view('sego/facebook',array('accounts'=>$accounts, 'sfid'=>$sfid));
 
         // Handle callback and process form
         if ($_POST['pageID']) {
-
-            //GET FACEBOOK CONNECTION
-            $fb= $this->fez->facebook->get_connection();
-            //GET HELPER
-            $helper = $fb->getRedirectLoginHelper();
-            //GRAB ACCESS TOKEN
-            $accessToken = $helper->getAccessToken();
-
-
-            //CHECK IF EXISTS
-
-            //REPLACING
-
-            //NEW
+            //SET FACEBOOK RECORD
             $this->fez->mongo->set(array(
                 'tokens.facebook.page_id'=>$_POST['pageID'],
                 'tokens.facebook.page_name'=>$_POST['page_name']
@@ -102,10 +43,6 @@ class sego extends controller{
                 ->where(array('sfid'=>$_POST['sfid']))
                 ->go();
         }
-
-
-        $this->fez->load->view('sego/facebook',array('accounts'=>$accounts, 'sfid'=>$sfid));
-
 
     }
 
@@ -207,24 +144,17 @@ class sego extends controller{
         $pageID = reset($pageID);
         $pageID = $pageID['tokens']['facebook_page_id'];
 
-        $token = $this->fez->db->select('tokens')
-                ->from('token')
-                ->where('network="FACEBOOK"')
-                ->row();
-        $token = $token['tokens'];
-
-        $fb = $this->fez->facebook->get_connection();
-        $fbApp = $fb->getApp();
+        $fbApp = $this->fb->getApp();
 
         $request = new Facebook\FacebookRequest(
           $fbApp,
-          $token,
+          $this->token,
           'GET',
           '/' . $pageID . '?fields=access_token'
         );
 
         try {
-            $response = $fb->getClient()->sendRequest($request);
+            $response = $this->fb->getClient()->sendRequest($request);
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();
@@ -247,7 +177,7 @@ class sego extends controller{
         );
 
         try {
-            $response = $fb->getClient()->sendRequest($request);
+            $response = $this->fb->getClient()->sendRequest($request);
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();
@@ -270,12 +200,12 @@ class sego extends controller{
 
             $request = new Facebook\FacebookRequest(
                 $fbApp,
-                $token,
+                $this->token,
                 'GET',
                 '/' . $post_id . '?fields=comments{created_time,from,message,id,comments},message,created_time,likes,shares'
             );
             try {
-                $response = $fb->getClient()->sendRequest($request);
+                $response = $this->fb->getClient()->sendRequest($request);
             } catch(Facebook\Exceptions\FacebookResponseException $e) {
                 // When Graph returns an error
                 echo 'Graph returned an error: ' . $e->getMessage();
@@ -306,14 +236,7 @@ class sego extends controller{
     // Update facebook post stats, e.g. likes
     public function facebook_update_stats() {
 
-        $token = $this->fez->db->select('tokens')
-                ->from('token')
-                ->where('network="FACEBOOK"')
-                ->row();
-        $token = $token['tokens'];
-
-        $fb = $this->fez->facebook->get_connection();
-        $fbApp = $fb->getApp();
+        $fbApp = $this->fb->getApp();
 
         $item_id = $_POST['item_id'];
         //GET PUBLISHED POSTS
@@ -327,12 +250,12 @@ class sego extends controller{
 
             $request = new Facebook\FacebookRequest(
                 $fbApp,
-                $token,
+                $this->token,
                 'GET',
                 '/' . $post_id . '?fields=likes,shares,comments'
             );
             try {
-                $response = $fb->getClient()->sendRequest($request);
+                $response = $this->fb->getClient()->sendRequest($request);
             } catch(Facebook\Exceptions\FacebookResponseException $e) {
                 // When Graph returns an error
                 echo 'Graph returned an error: ' . $e->getMessage();
@@ -385,15 +308,6 @@ class sego extends controller{
     */
     public function facebook_post(){
         // First, get fresh page token.
-
-        /*
-        $pageID = $this->fez->db->select('tokens')
-                ->from('token')
-                ->where('sfid="' . $_POST['client'] . '" AND network="FACEBOOK2"')
-                ->row();
-        $pageID = $pageID['tokens'];
-        */
-
         $pageID = $this->fez->mongo->find(array('tokens'))
                 ->in('records')
                 ->where(array('sfid'=>$_POST['client']))
@@ -402,24 +316,17 @@ class sego extends controller{
         $pageID = reset($pageID);
         $pageID = $pageID['tokens']['facebook_page_id'];
 
-        $token = $this->fez->db->select('tokens')
-                ->from('token')
-                ->where('network="FACEBOOK"')
-                ->row();
-        $token = $token['tokens'];
-
-        $fb= $this->fez->facebook->get_connection();
-        $fbApp = $fb->getApp();
+        $fbApp = $this->fb->getApp();
 
         $request = new Facebook\FacebookRequest(
           $fbApp,
-          $token,
+          $this->token,
           'GET',
           '/' . $pageID . '?fields=access_token'
         );
 
         try {
-            $response = $fb->getClient()->sendRequest($request);
+            $response = $this->fb->getClient()->sendRequest($request);
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();
@@ -469,7 +376,7 @@ class sego extends controller{
         );
 
         try {
-            $response = $fb->getClient()->sendRequest($request);
+            $response = $this->fb->getClient()->sendRequest($request);
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();

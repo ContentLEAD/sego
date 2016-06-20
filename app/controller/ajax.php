@@ -160,30 +160,6 @@ class ajax extends controller{
         echo $html;
     }
 
-    //-----------------
-    //SOCIAL ACTION
-    //------------------
-    public function get_action_OLD($network,$client,$item_id){
-        //CHECK IF AJAX
-        $this->is_ajax();
-        //CHECK IF AUTHED
-        $res = $this->fez->db->select('*')
-            ->from('token')
-         //   ->where('sfid="'.$client.'" AND network="'.$network.'" AND expiration < '.time())
-            ->where('sfid="'.$client.'" AND network="'.$network.'"')
-            ->row();
-        //NOT AUTHED
-        if(!$res){
-            $html = $this->build_action_html(false,$network,$client,$item_id);
-            //END CLASS
-            echo $html;
-            die();
-        }
-
-        $html = $this->build_action_html(true,$network,$client,$item_id,$res);
-        //END CALL
-        echo $html;
-    }
 
     //-----------------
     //SOCIAL ACTION
